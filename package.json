@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node index.js",
     "test": "jest",
-    "deploy": "./scripts/deploy.sh"
+    "test:coverage": "jest --coverage",
+    "deploy": "./scripts/deploy.sh",
+    "lint": "prettier --write \"{src,tests}/**/*.js\""
   },
   "keywords": [
     "blockchain",
@@ -24,8 +26,11 @@
   },
   "devDependencies": {
     "eslint": "^6.1.0",
-    "eslint-plugin-jest": "^22.15.1",
     "jest": "^24.8.0",
-    "nock": "^10.0.6"
+    "nock": "^10.0.6",
+    "prettier": "^1.18.2"
+  },
+  "prettier": {
+    "singleQuote": true
   }
 }

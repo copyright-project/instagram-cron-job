@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const postToDAO = (post) => {
+const postToDAO = post => {
   return {
     instagramId: post.id,
     imageUrl: post.images.standard_resolution.url,
@@ -9,8 +9,10 @@ const postToDAO = (post) => {
   };
 };
 
-const getMediaCount = async (accessToken) => {
-  const { data } = await axios.get(`https://api.instagram.com/v1/users/self/?access_token=${accessToken}`);
+const getMediaCount = async accessToken => {
+  const { data } = await axios.get(
+    `https://api.instagram.com/v1/users/self/?access_token=${accessToken}`
+  );
   return data.data.counts.media;
 };
 
@@ -23,14 +25,17 @@ const getMediaCount = async (accessToken) => {
  *  postedAt: string
  * }
  */
-const getAllUserMedia = async (accessToken) => {
+const getAllUserMedia = async accessToken => {
   const count = await getMediaCount(accessToken);
-  const { data } = await axios.get(`https://api.instagram.com/v1/users/self/media/recent/`, {
-    params: {
-      access_token: accessToken,
-      count
+  const { data } = await axios.get(
+    `https://api.instagram.com/v1/users/self/media/recent/`,
+    {
+      params: {
+        access_token: accessToken,
+        count
+      }
     }
-  });
+  );
   return data.data.map(postToDAO);
 };
 
@@ -39,7 +44,7 @@ async function* getMediaUntil(initUrl, stopCondition) {
   let url = initUrl;
 
   while (!isDone) {
-    const { data } = await axios.get(url)
+    const { data } = await axios.get(url);
     yield data.data;
     if (stopCondition(data)) {
       isDone = true;
@@ -52,7 +57,7 @@ async function* getMediaUntil(initUrl, stopCondition) {
 const getMediaStartingFrom = async (accessToken, lastMaxId) => {
   const initUrl = `https://api.instagram.com/v1/users/self/media/recent/?access_token=${accessToken}&min_id=${lastMaxId}`;
   const stopCondition = ({ pagination }) => {
-    return !pagination.next_max_id || pagination.next_max_id < lastMaxId
+    return !pagination.next_max_id || pagination.next_max_id < lastMaxId;
   };
   let media = [];
 
@@ -67,4 +72,4 @@ const getMediaStartingFrom = async (accessToken, lastMaxId) => {
 module.exports = {
   getAllUserMedia,
   getMediaStartingFrom
-}
+};

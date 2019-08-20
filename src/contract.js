@@ -9,23 +9,35 @@ const CONTRACT_NAME = process.env.REGISTRY_CONTRACT_NAME;
 
 const orbsClient = new Client(ORBS_NODE_URL, ORBS_VCHAIN_ID, 'TEST_NET');
 
-const registerMedia = async (userId, { instagramId, imageUrl, postUrl, postedAt }) => {
+const registerMedia = async (
+  userId,
+  { instagramId, imageUrl, postUrl, postedAt, hash }
+) => {
   const [tx] = orbsClient.createTransaction(
     decodeHex(ORBS_PUBLIC_KEY),
     decodeHex(ORBS_PRIVATE_KEY),
     CONTRACT_NAME,
     'registerMedia',
-    [argString(instagramId), argString(JSON.stringify({
-      imageUrl,
-      postUrl,
-      postedAt,
-      ownerId: userId
-    }))]
+    [
+      argString(instagramId),
+      argString(
+        JSON.stringify({
+          imageUrl,
+          postUrl,
+          postedAt,
+          hash,
+          ownerId: userId
+        })
+      )
+    ]
   );
   const receipt = await orbsClient.sendTransaction(tx);
-  return receipt.executionResult === 'SUCCESS' && receipt.requestStatus === 'COMPLETED';
+  return (
+    receipt.executionResult === 'SUCCESS' &&
+    receipt.requestStatus === 'COMPLETED'
+  );
 };
 
 module.exports = {
   registerMedia
-}
+};

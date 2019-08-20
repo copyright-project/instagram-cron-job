@@ -3,7 +3,8 @@
     "browser": true,
     "node": true,
     "commonjs": true,
-    "es6": true
+    "es6": true,
+    "jest": true
   },
   "extends": "eslint:recommended",
   "globals": {
@@ -13,7 +14,7 @@
   "parserOptions": {
     "ecmaVersion": 2018
   },
-  "plugins": ["jest"],
+  "plugins": [],
   "rules": {
     "indent": ["error", 2]
   }
