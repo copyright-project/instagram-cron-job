@@ -1,8 +1,13 @@
 const { syncBackJob, syncForwardJob } = require('./src/jobs');
 const cron = require('node-cron');
 const express = require('express');
+const Sentry = require('@sentry/node');
 
 const PORT = process.env.PORT || 5678;
+
+Sentry.init({
+  dsn: 'https://13b6af852aa74adb953730f775edd27e@sentry.io/1537409'
+});
 
 const app = express();
 
