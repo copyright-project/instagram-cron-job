@@ -1,4 +1,4 @@
-# Instagram Cron Jobs
+# Instagram Cron Jobs [![Build Status](https://travis-ci.org/copyright-project/instagram-cron-jobs.svg?branch=master)](https://travis-ci.org/copyright-project/instagram-cron-jobs)
 > Sync images backward and forward
 
 ## Sync backward
