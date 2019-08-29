@@ -1,18 +1,33 @@
-const jobs = require('../src/jobs');
 const Hash = require('./drivers/hash');
 const Users = require('./drivers/users');
 const Posts = require('./drivers/posts');
 
-jest.mock('../src/contract', () => ({
-  registerMedia: jest.fn()
+const mockCreateTx = jest.fn();
+const mockCreateQuery = jest.fn();
+const mockSendTx = jest.fn();
+const mockSendQuery = jest.fn();
+
+jest.doMock('orbs-client-sdk', () => ({
+  Client: jest.fn().mockImplementation(() => ({
+    createTransaction: mockCreateTx,
+    createQuery: mockCreateQuery,
+    sendTransaction: mockSendTx,
+    sendQuery: mockSendQuery
+  })),
+  decodeHex: jest.fn(str => str),
+  argString: jest.fn(str => str)
 }));
 
 describe('Jobs', () => {
   describe('Sync backward', () => {
     const userId = '12345678';
     const accessToken = 'some-access-token';
-    let usersDriver, postsDriver, hashDriver;
+    let usersDriver, postsDriver, hashDriver, jobs;
     let markAsSyncedCall, lastSyncedIdCall, updateSyncedImagesCall;
+
+    beforeEach(() => {
+      jobs = require('../src/jobs');
+    });
 
     beforeEach(() => {
       usersDriver = new Users();
@@ -39,34 +54,106 @@ describe('Jobs', () => {
       );
     });
 
+    afterEach(() => {
+      jest.resetModules();
+      mockCreateTx.mockReset();
+      mockCreateQuery.mockReset();
+      mockSendTx.mockReset();
+      mockSendQuery.mockReset();
+    });
+
     it('should store image in contract', async () => {
+      mockCreateTx.mockReturnValue(['tx']);
+      mockSendTx.mockReturnValue({
+        executionResult: 'SUCCESS',
+        requestStatus: 'COMPLETED'
+      });
+      mockSendQuery.mockReturnValue({
+        outputArguments: [{ value: '0000000000' }]
+      });
+
       await jobs.syncBackJob();
 
-      const registerMediaMock = require('../src/contract').registerMedia;
       const allPosts = postsDriver.getAllPosts();
       const lastIndex = allPosts.length - 1;
 
-      expect(registerMediaMock).toHaveBeenCalledTimes(allPosts.length);
-      expect(registerMediaMock).lastCalledWith(userId, {
-        hash: lastIndex,
-        instagramId: allPosts[lastIndex].id,
-        imageUrl: allPosts[lastIndex].images.standard_resolution.url,
-        postUrl: allPosts[lastIndex].link,
-        postedAt: allPosts[lastIndex].created_time
+      expect(mockCreateTx).toHaveBeenCalledTimes(allPosts.length);
+      expect(mockCreateTx).lastCalledWith(
+        process.env.ORBS_PUBLIC_KEY,
+        process.env.ORBS_PRIVATE_KEY,
+        process.env.REGISTRY_CONTRACT_NAME,
+        'registerMedia',
+        [
+          allPosts[lastIndex].id,
+          JSON.stringify({
+            imageUrl: allPosts[lastIndex].images.standard_resolution.url,
+            postUrl: allPosts[lastIndex].link,
+            postedAt: allPosts[lastIndex].created_time,
+            hash: lastIndex,
+            ownerId: userId
+          })
+        ]
+      );
+    });
+
+    it('should register only those that do not exist', async () => {
+      mockCreateTx.mockReturnValue(['tx']);
+      mockSendTx.mockReturnValue({
+        executionResult: 'SUCCESS',
+        requestStatus: 'COMPLETED'
       });
+      mockSendQuery.mockReturnValue({
+        outputArguments: [{ value: '0100000000' }]
+      });
+
+      await jobs.syncBackJob();
+
+      const allPosts = postsDriver.getAllPosts();
+
+      expect(mockCreateQuery).toHaveBeenCalledWith(
+        process.env.ORBS_PUBLIC_KEY,
+        process.env.REGISTRY_CONTRACT_NAME,
+        'areRegistered',
+        [allPosts.map(post => post.id).join(',')]
+      );
+      expect(mockCreateTx).toHaveBeenCalledTimes(allPosts.length - 1);
     });
 
     it('should mark user in the DB as synced', async () => {
+      mockCreateTx.mockReturnValue(['tx']);
+      mockSendTx.mockReturnValue({
+        executionResult: 'SUCCESS',
+        requestStatus: 'COMPLETED'
+      });
+      mockSendQuery.mockReturnValue({
+        outputArguments: [{ value: '0000000000' }]
+      });
       await jobs.syncBackJob();
       expect(markAsSyncedCall.isDone()).toBe(true);
     });
 
     it('should set last synced image id', async () => {
+      mockCreateTx.mockReturnValue(['tx']);
+      mockSendTx.mockReturnValue({
+        executionResult: 'SUCCESS',
+        requestStatus: 'COMPLETED'
+      });
+      mockSendQuery.mockReturnValue({
+        outputArguments: [{ value: '0000000000' }]
+      });
       await jobs.syncBackJob();
       expect(lastSyncedIdCall.isDone()).toBe(true);
     });
 
     it('should update amount of synced images', async () => {
+      mockCreateTx.mockReturnValue(['tx']);
+      mockSendTx.mockReturnValue({
+        executionResult: 'SUCCESS',
+        requestStatus: 'COMPLETED'
+      });
+      mockSendQuery.mockReturnValue({
+        outputArguments: [{ value: '0000000000' }]
+      });
       await jobs.syncBackJob();
       expect(updateSyncedImagesCall.isDone()).toBe(true);
     });

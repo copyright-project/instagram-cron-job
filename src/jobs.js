@@ -51,7 +51,10 @@ const syncBackJob = async () => {
 
 const syncBackUser = async (userId, accessToken) => {
   const media = await instagram.getAllUserMedia(accessToken);
-  await Promise.all(media.map(post => calculateHashAndRegister(userId, post)));
+  const filteredMedia = await contract.filterAlreadyRegistered(media);
+  await Promise.all(
+    filteredMedia.map(post => calculateHashAndRegister(userId, post))
+  );
   await db.markUserAsSynced(userId);
   const maxId = media[0]['instagramId'];
   await db.setLastSyncMaxId(userId, maxId);
