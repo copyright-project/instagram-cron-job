@@ -87,7 +87,6 @@ describe('Jobs', () => {
           allPosts[lastIndex].id,
           JSON.stringify({
             imageUrl: allPosts[lastIndex].images.standard_resolution.url,
-            postUrl: allPosts[lastIndex].link,
             postedAt: allPosts[lastIndex].created_time,
             hash: lastIndex,
             ownerId: userId

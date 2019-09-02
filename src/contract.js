@@ -11,7 +11,7 @@ const orbsClient = new Client(ORBS_NODE_URL, ORBS_VCHAIN_ID, 'TEST_NET');
 
 const registerMedia = async (
   userId,
-  { instagramId, imageUrl, postUrl, postedAt, hash }
+  { instagramId, imageUrl, postedAt, hash }
 ) => {
   const [tx] = orbsClient.createTransaction(
     ORBS_PUBLIC_KEY,
@@ -23,7 +23,6 @@ const registerMedia = async (
       argString(
         JSON.stringify({
           imageUrl,
-          postUrl,
           postedAt,
           hash,
           ownerId: userId

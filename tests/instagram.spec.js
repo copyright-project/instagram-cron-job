@@ -20,8 +20,6 @@ describe('Instagram Service', () => {
         instagramId: '2103913782500881485_12345678',
         imageUrl:
           'https://some-image.com/vp/c763718f898c5f78979ef9f8ed19be9d/5DCD6B14/t51.2885-15/sh0.08/e35/s640x640/66615906_407924376495714_8082663129990530053_n.jpg?_nc_ht=scontent.cdninstagram.com',
-        postUrl:
-          'https://www.instagram.com/p/B0ymnAsA3RNkE15Bi-Ox560WszBVL-vLCOTPZQ0/',
         postedAt: '1565026089'
       }
     ]);

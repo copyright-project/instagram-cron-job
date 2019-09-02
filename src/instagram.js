@@ -4,7 +4,6 @@ const postToDAO = post => {
   return {
     instagramId: post.id,
     imageUrl: post.images.standard_resolution.url,
-    postUrl: post.link,
     postedAt: post.created_time
   };
 };
@@ -21,7 +20,6 @@ const getMediaCount = async accessToken => {
  * Media: {
  *  instagramId: string
  *  imageUrl: string
- *  postUrl: string
  *  postedAt: string
  * }
  */
