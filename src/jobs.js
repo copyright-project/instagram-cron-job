@@ -4,13 +4,14 @@ const hash = require('./hash');
 const contract = require('./contract');
 const instagram = require('./instagram');
 
-const calculateHashAndRegister = async (userId, post) => {
+const calculateHashAndRegister = async (post, copyrightAttribution) => {
   const res = await hash.calculateHash(post.imageUrl);
   const updatedPost = {
     ...post,
-    hash: res
+    hash: res,
+    copyrightAttribution
   };
-  return contract.registerMedia(userId, updatedPost);
+  return contract.registerMedia(updatedPost);
 };
 
 const syncForwardJob = async () => {
@@ -18,19 +19,29 @@ const syncForwardJob = async () => {
   const usersToSync = _.pickBy(users, user => user.isSyncedBack);
   return Promise.all(
     _.map(usersToSync, (val, userId) =>
-      syncUserForward(userId, val['accessToken'], val['lastSyncedMaxId'])
+      syncUserForward(
+        userId,
+        val['accessToken'],
+        val['lastSyncedMaxId'],
+        val['copyrightAttribution']
+      )
     )
   );
 };
 
-const syncUserForward = async (userId, accessToken, lastSyncedMaxId) => {
+const syncUserForward = async (
+  userId,
+  accessToken,
+  lastSyncedMaxId,
+  copyrightAttribution
+) => {
   const newMedia = await instagram.getMediaStartingFrom(
     accessToken,
     lastSyncedMaxId
   );
   if (newMedia.length > 0) {
     await Promise.all(
-      newMedia.map(post => calculateHashAndRegister(userId, post))
+      newMedia.map(post => calculateHashAndRegister(post, copyrightAttribution))
     );
     const maxId = newMedia[0]['instagramId'];
     await db.setLastSyncMaxId(userId, maxId);
@@ -44,16 +55,18 @@ const syncBackJob = async () => {
   const usersToSync = _.pickBy(users, user => !user.isSyncedBack);
   return Promise.all(
     _.map(usersToSync, (val, userId) =>
-      syncBackUser(userId, val['accessToken'])
+      syncBackUser(userId, val['accessToken'], val['copyrightAttribution'])
     )
   );
 };
 
-const syncBackUser = async (userId, accessToken) => {
+const syncBackUser = async (userId, accessToken, copyrightAttribution) => {
   const media = await instagram.getAllUserMedia(accessToken);
   const filteredMedia = await contract.filterAlreadyRegistered(media);
   await Promise.all(
-    filteredMedia.map(post => calculateHashAndRegister(userId, post))
+    filteredMedia.map(post =>
+      calculateHashAndRegister(post, copyrightAttribution)
+    )
   );
   await db.markUserAsSynced(userId);
   const maxId = media[0]['instagramId'];

@@ -18,7 +18,7 @@ const jwtClient = new google.auth.JWT(
 
 const auth = () => {
   return new Promise((resolve, reject) => {
-    jwtClient.authorize(function(error, tokens) {
+    jwtClient.authorize((error, tokens) => {
       if (error) {
         console.log('Error making request to generate access token:', error);
         reject(error);

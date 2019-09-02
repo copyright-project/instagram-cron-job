@@ -9,10 +9,13 @@ const CONTRACT_NAME = process.env.REGISTRY_CONTRACT_NAME;
 
 const orbsClient = new Client(ORBS_NODE_URL, ORBS_VCHAIN_ID, 'TEST_NET');
 
-const registerMedia = async (
-  userId,
-  { instagramId, imageUrl, postedAt, hash }
-) => {
+const registerMedia = async ({
+  instagramId,
+  imageUrl,
+  postedAt,
+  hash,
+  copyrightAttribution
+}) => {
   const [tx] = orbsClient.createTransaction(
     ORBS_PUBLIC_KEY,
     ORBS_PRIVATE_KEY,
@@ -25,7 +28,7 @@ const registerMedia = async (
           imageUrl,
           postedAt,
           hash,
-          ownerId: userId
+          copyrightAttribution
         })
       )
     ]

@@ -18,10 +18,23 @@ jest.doMock('orbs-client-sdk', () => ({
   argString: jest.fn(str => str)
 }));
 
+jest.doMock('googleapis', () => ({
+  google: {
+    auth: {
+      JWT: jest.fn().mockImplementation(() => ({
+        authorize: jest
+          .fn()
+          .mockImplementation(cb => cb(null, { access_token: 'token' }))
+      }))
+    }
+  }
+}));
+
 describe('Jobs', () => {
   describe('Sync backward', () => {
     const userId = '12345678';
     const accessToken = 'some-access-token';
+    const copyrightAttribution = 'Sergey Bolshchikov';
     let usersDriver, postsDriver, hashDriver, jobs;
     let markAsSyncedCall, lastSyncedIdCall, updateSyncedImagesCall;
 
@@ -36,7 +49,9 @@ describe('Jobs', () => {
     });
 
     beforeEach(() => {
-      usersDriver.givenNonSyncUser(userId, accessToken).whenFetchingAllUsers();
+      usersDriver
+        .givenNonSyncUser(userId, accessToken, copyrightAttribution)
+        .whenFetchingAllUsers();
       postsDriver.whenFetchingMediaCount(accessToken);
       postsDriver.whenFetchingAllPosts(accessToken);
       hashDriver.whenFetchingHashForImages(10);
@@ -89,7 +104,7 @@ describe('Jobs', () => {
             imageUrl: allPosts[lastIndex].images.standard_resolution.url,
             postedAt: allPosts[lastIndex].created_time,
             hash: lastIndex,
-            ownerId: userId
+            copyrightAttribution
           })
         ]
       );

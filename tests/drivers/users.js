@@ -4,10 +4,10 @@ class Users {
   constructor() {
     this.users = {};
   }
-  givenNonSyncUser(userId, accessToken) {
+  givenNonSyncUser(userId, accessToken, copyrightAttribution) {
     this.users[userId] = {
       accessToken,
-      username: 'snb'
+      copyrightAttribution
     };
     return this;
   }
