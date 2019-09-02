@@ -1,14 +1,18 @@
 const axios = require('axios');
 const { google } = require('googleapis');
-const serviceAccount = require('../DO_NOT_COMMIT_IT_OR_BE_FIRED.json');
 
-// Define the required scopes.
 const scopes = [
   'https://www.googleapis.com/auth/userinfo.email',
   'https://www.googleapis.com/auth/firebase.database'
 ];
 
-// Authenticate a JWT client with the service account.
+let serviceAccount = {};
+
+try {
+  serviceAccount = require('../DO_NOT_COMMIT_IT_OR_BE_FIRED.json');
+// eslint-disable-next-line no-empty
+} catch (err) { }
+
 const jwtClient = new google.auth.JWT(
   serviceAccount.client_email,
   null,
