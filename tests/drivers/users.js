@@ -14,11 +14,13 @@ class Users {
   whenFetchingAllUsers() {
     return nock(`https://instagram-media-rights.firebaseio.com`)
       .get('/users.json')
+      .query(q => q['access_token'] !== undefined)
       .reply(200, this.users);
   }
   whenFetchingUser(userId) {
     return nock(`https://instagram-media-rights.firebaseio.com`)
       .get(`/users/${userId}.json`)
+      .query(q => q['access_token'] !== undefined)
       .reply(200, this.users);
   }
   markAsSynced(userId) {
@@ -26,6 +28,7 @@ class Users {
       .patch(`/users/${userId}.json`, {
         isSyncedBack: true
       })
+      .query(q => q['access_token'] !== undefined)
       .reply(200, 'OK');
   }
   setLastSyncedId(userId, lastSyncedMaxId) {
@@ -33,6 +36,7 @@ class Users {
       .patch(`/users/${userId}.json`, {
         lastSyncedMaxId
       })
+      .query(q => q['access_token'] !== undefined)
       .reply(200);
   }
   updateAmountOfSyncedImages(userId, amount) {
@@ -41,6 +45,7 @@ class Users {
       .patch(`/users/${userId}.json`, {
         registeredImages: amount
       })
+      .query(q => q['access_token'] !== undefined)
       .reply(200);
   }
 }
