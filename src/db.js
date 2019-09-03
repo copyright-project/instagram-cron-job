@@ -10,8 +10,8 @@ let serviceAccount = {};
 
 try {
   serviceAccount = require('../DO_NOT_COMMIT_IT_OR_BE_FIRED.json');
-// eslint-disable-next-line no-empty
-} catch (err) { }
+  // eslint-disable-next-line no-empty
+} catch (err) {}
 
 const jwtClient = new google.auth.JWT(
   serviceAccount.client_email,
