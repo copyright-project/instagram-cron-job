@@ -1,8 +1,11 @@
 const _ = require('lodash');
 const db = require('./db');
 const hash = require('./hash');
+const Mixpanel = require('mixpanel');
 const contract = require('./contract');
 const instagram = require('./instagram');
+
+const mixpanel = Mixpanel.init(process.env.MIXPANEL_TOKEN);
 
 const calculateHashAndRegister = async (post, copyrightAttribution) => {
   const res = await hash.calculateHash(post.imageUrl);
@@ -11,7 +14,11 @@ const calculateHashAndRegister = async (post, copyrightAttribution) => {
     hash: res,
     copyrightAttribution
   };
-  return contract.registerMedia(updatedPost);
+  const registeredSuccessfully = await contract.registerMedia(updatedPost);
+  if (registeredSuccessfully) {
+    mixpanel.track('ImageRegistered');
+  }
+  return registeredSuccessfully;
 };
 
 const syncForwardJob = async () => {
