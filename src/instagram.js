@@ -15,28 +15,6 @@ const getMediaCount = async accessToken => {
   return data.data.counts.media;
 };
 
-/**
- * Returns Media[]
- * Media: {
- *  instagramId: string
- *  imageUrl: string
- *  postedAt: string
- * }
- */
-const getAllUserMedia = async accessToken => {
-  const count = await getMediaCount(accessToken);
-  const { data } = await axios.get(
-    `https://api.instagram.com/v1/users/self/media/recent/`,
-    {
-      params: {
-        access_token: accessToken,
-        count
-      }
-    }
-  );
-  return data.data.map(postToDAO);
-};
-
 async function* getMediaUntil(initUrl, stopCondition) {
   let isDone = false;
   let url = initUrl;
@@ -51,6 +29,17 @@ async function* getMediaUntil(initUrl, stopCondition) {
     }
   }
 }
+
+const getAllUserMedia = async accessToken => {
+  const count = await getMediaCount(accessToken);
+  const url = `https://api.instagram.com/v1/users/self/media/recent/?access_token=${accessToken}&count=${count}`;
+  const stopCondition = ({ pagination }) => pagination.next_url === undefined;
+  let media = [];
+  for await (const posts of getMediaUntil(url, stopCondition)) {
+    media.push(...posts);
+  }
+  return media.map(postToDAO);
+};
 
 const getMediaStartingFrom = async (accessToken, lastMaxId) => {
   const initUrl = `https://api.instagram.com/v1/users/self/media/recent/?access_token=${accessToken}&min_id=${lastMaxId}`;

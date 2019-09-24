@@ -47,9 +47,9 @@ const syncUserForward = async (
     lastSyncedMaxId
   );
   if (newMedia.length > 0) {
-    await Promise.all(
-      newMedia.map(post => calculateHashAndRegister(post, copyrightAttribution))
-    );
+    for (let i = 0; i < newMedia.length; i++) {
+      await calculateHashAndRegister(newMedia[i], copyrightAttribution);
+    }
     const maxId = newMedia[0]['instagramId'];
     await db.setLastSyncMaxId(userId, maxId);
     await db.updateRegisteredImagesAmount(userId, newMedia.length);
@@ -71,11 +71,9 @@ const syncBackUser = async (userId, accessToken, copyrightAttribution) => {
   try {
     const media = await instagram.getAllUserMedia(accessToken);
     const filteredMedia = await contract.filterAlreadyRegistered(media);
-    await Promise.all(
-      filteredMedia.map(post =>
-        calculateHashAndRegister(post, copyrightAttribution)
-      )
-    );
+    for (let i = 0; i < filteredMedia.length; i++) {
+      await calculateHashAndRegister(filteredMedia[i], copyrightAttribution);
+    }
     await db.markUserAsSynced(userId);
     const maxId = media[0]['instagramId'];
     await db.setLastSyncMaxId(userId, maxId);
