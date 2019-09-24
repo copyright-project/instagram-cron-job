@@ -61,18 +61,22 @@ const syncBackJob = async () => {
 };
 
 const syncBackUser = async (userId, accessToken, copyrightAttribution) => {
-  const media = await instagram.getAllUserMedia(accessToken);
-  const filteredMedia = await contract.filterAlreadyRegistered(media);
-  await Promise.all(
-    filteredMedia.map(post =>
-      calculateHashAndRegister(post, copyrightAttribution)
-    )
-  );
-  await db.markUserAsSynced(userId);
-  const maxId = media[0]['instagramId'];
-  await db.setLastSyncMaxId(userId, maxId);
-  await db.updateRegisteredImagesAmount(userId, media.length);
-  return;
+  try {
+    const media = await instagram.getAllUserMedia(accessToken);
+    const filteredMedia = await contract.filterAlreadyRegistered(media);
+    await Promise.all(
+      filteredMedia.map(post =>
+        calculateHashAndRegister(post, copyrightAttribution)
+      )
+    );
+    await db.markUserAsSynced(userId);
+    const maxId = media[0]['instagramId'];
+    await db.setLastSyncMaxId(userId, maxId);
+    await db.updateRegisteredImagesAmount(userId, media.length);
+    return;
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 module.exports = {
