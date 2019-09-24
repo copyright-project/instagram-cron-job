@@ -77,7 +77,7 @@ const syncBackUser = async (userId, accessToken, copyrightAttribution) => {
     await db.markUserAsSynced(userId);
     const maxId = media[0]['instagramId'];
     await db.setLastSyncMaxId(userId, maxId);
-    await db.updateRegisteredImagesAmount(userId, media.length);
+    await db.updateRegisteredImagesAmount(userId, filteredMedia.length);
     return;
   } catch (err) {
     console.log(err);
@@ -86,5 +86,7 @@ const syncBackUser = async (userId, accessToken, copyrightAttribution) => {
 
 module.exports = {
   syncForwardJob,
-  syncBackJob
+  syncBackJob,
+  syncBackUser,
+  syncUserForward
 };

@@ -11,7 +11,7 @@ let serviceAccount = {};
 try {
   serviceAccount = require('../DO_NOT_COMMIT_IT_OR_BE_FIRED.json');
   // eslint-disable-next-line no-empty
-} catch (err) {}
+} catch (err) { }
 
 const jwtClient = new google.auth.JWT(
   serviceAccount.client_email,
@@ -57,6 +57,14 @@ const getUsers = async () => {
   return data;
 };
 
+const getUser = async userId => {
+  const accessToken = await auth();
+  const { data } = await axios.get(
+    `https://instagram-media-rights.firebaseio.com/users/${userId}.json?access_token=${accessToken}`
+  );
+  return data;
+}
+
 const markUserAsSynced = async userId => {
   const accessToken = await auth();
   return axios.patch(
@@ -94,6 +102,7 @@ const updateRegisteredImagesAmount = async (userId, increase) => {
 };
 
 module.exports = {
+  getUser,
   getUsers,
   markUserAsSynced,
   setLastSyncMaxId,
