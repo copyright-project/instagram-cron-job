@@ -22,10 +22,9 @@ const calculateHashAndRegister = async (post, copyrightAttribution) => {
 };
 
 const syncForwardJob = async () => {
-  const users = await db.getUsers();
-  const usersToSync = _.pickBy(users, user => user.isSyncedBack);
+  const users = await db.getRegisteredUsers();
   return Promise.all(
-    _.map(usersToSync, (val, userId) =>
+    _.map(users, (val, userId) =>
       syncUserForward(
         userId,
         val['accessToken'],
@@ -58,10 +57,9 @@ const syncUserForward = async (
 };
 
 const syncBackJob = async () => {
-  const users = await db.getUsers();
-  const usersToSync = _.pickBy(users, user => !user.isSyncedBack);
+  const users = await db.getNewUsers();
   return Promise.all(
-    _.map(usersToSync, (val, userId) =>
+    _.map(users, (val, userId) =>
       syncBackUser(userId, val['accessToken'], val['copyrightAttribution'])
     )
   );

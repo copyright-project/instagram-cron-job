@@ -11,7 +11,7 @@ let serviceAccount = {};
 try {
   serviceAccount = require('../DO_NOT_COMMIT_IT_OR_BE_FIRED.json');
   // eslint-disable-next-line no-empty
-} catch (err) { }
+} catch (err) {}
 
 const jwtClient = new google.auth.JWT(
   serviceAccount.client_email,
@@ -38,32 +38,29 @@ const auth = () => {
   });
 };
 
-/**
- * Users object
- * {
- *  [userId: string]: {
- *    accessToken: string,
- *    isSyncedBack: bool,
- *    lastSyncedMaxId: string
- *  }
- * }
- */
-
-const getUsers = async () => {
-  const accessToken = await auth();
-  const { data } = await axios.get(
-    `https://instagram-media-rights.firebaseio.com/users.json?access_token=${accessToken}`
-  );
-  return data;
-};
-
 const getUser = async userId => {
   const accessToken = await auth();
   const { data } = await axios.get(
     `https://instagram-media-rights.firebaseio.com/users/${userId}.json?access_token=${accessToken}`
   );
   return data;
-}
+};
+
+const getNewUsers = async () => {
+  const accessToken = await auth();
+  const { data } = await axios.get(
+    `https://instagram-media-rights.firebaseio.com/users.json?access_token=${accessToken}&orderBy="isSyncedBack"&equalTo=null`
+  );
+  return data;
+};
+
+const getRegisteredUsers = async () => {
+  const accessToken = await auth();
+  const { data } = await axios.get(
+    `https://instagram-media-rights.firebaseio.com/users.json?access_token=${accessToken}&orderBy="isSyncedBack"&equalTo=true`
+  );
+  return data;
+};
 
 const markUserAsSynced = async userId => {
   const accessToken = await auth();
@@ -103,7 +100,8 @@ const updateRegisteredImagesAmount = async (userId, increase) => {
 
 module.exports = {
   getUser,
-  getUsers,
+  getNewUsers,
+  getRegisteredUsers,
   markUserAsSynced,
   setLastSyncMaxId,
   updateRegisteredImagesAmount
