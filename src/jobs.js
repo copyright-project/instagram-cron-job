@@ -23,6 +23,9 @@ const calculateHashAndRegister = async (post, copyrightAttribution) => {
 
 const syncForwardJob = async () => {
   const users = await db.getRegisteredUsers();
+
+  mixpanel.track('SyncForwardUsers', { amount: Object.keys(users).length });
+
   return Promise.all(
     _.map(users, (val, userId) =>
       syncUserForward(
@@ -47,7 +50,7 @@ const syncUserForward = async (
   );
   if (newMedia.length > 0) {
 
-    mixpanel.track('SyncForwardImages', newMedia.length);
+    mixpanel.track('SyncForwardImages', { amount: newMedia.length });
 
     for (let i = 0; i < newMedia.length; i++) {
       await calculateHashAndRegister(newMedia[i], copyrightAttribution);
@@ -61,6 +64,9 @@ const syncUserForward = async (
 
 const syncBackJob = async () => {
   const users = await db.getNewUsers();
+
+  mixpanel.track('SyncBackUsers', { amount: Object.keys(users).length });
+
   return Promise.all(
     _.map(users, (val, userId) =>
       syncBackUser(userId, val['accessToken'], val['copyrightAttribution'])
@@ -73,7 +79,7 @@ const syncBackUser = async (userId, accessToken, copyrightAttribution) => {
     const media = await instagram.getAllUserMedia(accessToken);
     const filteredMedia = await contract.filterAlreadyRegistered(media);
 
-    mixpanel.track('SyncBackImages', filteredMedia.length);
+    mixpanel.track('SyncBackImages', { amount: filteredMedia.length });
 
     for (let i = 0; i < filteredMedia.length; i++) {
       await calculateHashAndRegister(filteredMedia[i], copyrightAttribution);
