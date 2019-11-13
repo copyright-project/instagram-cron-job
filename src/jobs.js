@@ -4,8 +4,15 @@ const hash = require('./hash');
 const Mixpanel = require('mixpanel');
 const contract = require('./contract');
 const instagram = require('./instagram');
+const Sentry = require('@sentry/node');
+
 
 const mixpanel = Mixpanel.init(process.env.MIXPANEL_TOKEN);
+
+Sentry.init({
+  dsn: 'https://13b6af852aa74adb953730f775edd27e@sentry.io/1537409'
+});
+
 
 const calculateHashAndRegister = async (post, copyrightAttribution) => {
   const res = await hash.calculateHash(post.imageUrl);
@@ -49,15 +56,19 @@ const syncUserForward = async (
     lastSyncedMaxId
   );
   if (newMedia.length > 0) {
+    try {
+      mixpanel.track('SyncForwardImages', { amount: newMedia.length });
 
-    mixpanel.track('SyncForwardImages', { amount: newMedia.length });
-
-    for (let i = 0; i < newMedia.length; i++) {
-      await calculateHashAndRegister(newMedia[i], copyrightAttribution);
+      for (let i = 0; i < newMedia.length; i++) {
+        await calculateHashAndRegister(newMedia[i], copyrightAttribution);
+      }
+      const maxId = newMedia[0]['instagramId'];
+      await db.setLastSyncMaxId(userId, maxId);
+      await db.updateRegisteredImagesAmount(userId, newMedia.length);
+    } catch (err) {
+      console.log(err);
+      Sentry.captureException(err);
     }
-    const maxId = newMedia[0]['instagramId'];
-    await db.setLastSyncMaxId(userId, maxId);
-    await db.updateRegisteredImagesAmount(userId, newMedia.length);
   }
   return;
 };
@@ -91,6 +102,7 @@ const syncBackUser = async (userId, accessToken, copyrightAttribution) => {
     return;
   } catch (err) {
     console.log(err);
+    Sentry.captureException(err);
   }
 };
 
