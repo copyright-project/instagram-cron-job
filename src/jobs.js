@@ -46,6 +46,9 @@ const syncUserForward = async (
     lastSyncedMaxId
   );
   if (newMedia.length > 0) {
+
+    mixpanel.track('SyncForwardImages', newMedia.length);
+
     for (let i = 0; i < newMedia.length; i++) {
       await calculateHashAndRegister(newMedia[i], copyrightAttribution);
     }
@@ -69,6 +72,9 @@ const syncBackUser = async (userId, accessToken, copyrightAttribution) => {
   try {
     const media = await instagram.getAllUserMedia(accessToken);
     const filteredMedia = await contract.filterAlreadyRegistered(media);
+
+    mixpanel.track('SyncBackImages', filteredMedia.length);
+
     for (let i = 0; i < filteredMedia.length; i++) {
       await calculateHashAndRegister(filteredMedia[i], copyrightAttribution);
     }
