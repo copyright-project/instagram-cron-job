@@ -1,5 +1,7 @@
 const nock = require('nock');
 
+const FIREBASE_BASE_URL = 'https://instagram-media-rights.firebaseio.com';
+
 class Users {
   constructor() {
     this.users = {};
@@ -12,19 +14,19 @@ class Users {
     return this;
   }
   whenFetchingAllUsers() {
-    return nock(`https://instagram-media-rights.firebaseio.com`)
+    return nock(FIREBASE_BASE_URL)
       .get('/users.json')
       .query(q => q['access_token'] !== undefined)
       .reply(200, this.users);
   }
   whenFetchingUser(userId) {
-    return nock(`https://instagram-media-rights.firebaseio.com`)
+    return nock(FIREBASE_BASE_URL)
       .get(`/users/${userId}.json`)
       .query(q => q['access_token'] !== undefined)
       .reply(200, this.users);
   }
   markAsSynced(userId) {
-    return nock(`https://instagram-media-rights.firebaseio.com`)
+    return nock(FIREBASE_BASE_URL)
       .patch(`/users/${userId}.json`, {
         isSyncedBack: true
       })
@@ -32,7 +34,7 @@ class Users {
       .reply(200, 'OK');
   }
   setLastSyncedId(userId, lastSyncedMaxId) {
-    return nock(`https://instagram-media-rights.firebaseio.com`)
+    return nock(FIREBASE_BASE_URL)
       .patch(`/users/${userId}.json`, {
         lastSyncedMaxId
       })
@@ -41,7 +43,7 @@ class Users {
   }
   updateAmountOfSyncedImages(userId, amount) {
     this.whenFetchingUser(userId);
-    return nock(`https://instagram-media-rights.firebaseio.com`)
+    return nock(FIREBASE_BASE_URL)
       .patch(`/users/${userId}.json`, {
         registeredImages: amount
       })
