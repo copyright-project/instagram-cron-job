@@ -1,5 +1,4 @@
 const axios = require('axios');
-const Sentry = require('@sentry/node');
 
 const postToDAO = post => {
   return {
@@ -38,17 +37,8 @@ const getAllUserMedia = async accessToken => {
 
   const stopCondition = ({ pagination }) => pagination.next_url === undefined;
 
-  try {
-    for await (const posts of getMediaUntil(url, stopCondition)) {
-      media.push(...posts);
-    }
-  } catch ({ data }) {
-    const { meta } = data;
-    if (meta.error_message) {
-      Sentry.captureMessage(meta.error_message);
-    } else {
-      Sentry.captureException(meta);
-    }
+  for await (const posts of getMediaUntil(url, stopCondition)) {
+    media.push(...posts);
   }
 
   return media.map(postToDAO);
@@ -60,17 +50,8 @@ const getMediaStartingFrom = async (accessToken, lastMaxId) => {
 
   const stopCondition = ({ pagination }) => !pagination.next_max_id || pagination.next_max_id < lastMaxId;
 
-  try {
-    for await (const posts of getMediaUntil(url, stopCondition)) {
-      media.push(...posts);
-    }
-  } catch ({ data }) {
-    const { meta } = data;
-    if (meta.error_message) {
-      Sentry.captureMessage(meta.error_message);
-    } else {
-      Sentry.captureException(meta);
-    }
+  for await (const posts of getMediaUntil(url, stopCondition)) {
+    media.push(...posts);
   }
 
   const freshPosts = media.filter(post => post.id > lastMaxId);

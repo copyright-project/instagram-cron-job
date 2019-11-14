@@ -66,7 +66,11 @@ const syncUserForward = async (
       await db.updateRegisteredImagesAmount(userId, newMedia.length);
     } catch (err) {
       console.log(err);
-      Sentry.captureException(err);
+      if (err.data) {
+        Sentry.captureMessage(JSON.stringify(err.data));
+      } else {
+        Sentry.captureException(err);
+      }
     }
   }
   return;
@@ -100,7 +104,11 @@ const syncBackUser = async (userId, accessToken, copyrightAttribution) => {
     await db.updateRegisteredImagesAmount(userId, filteredMedia.length);
   } catch (err) {
     console.log(err);
-    Sentry.captureException(err);
+    if (err.data) {
+      Sentry.captureMessage(JSON.stringify(err.data));
+    } else {
+      Sentry.captureException(err);
+    }
   }
 };
 
