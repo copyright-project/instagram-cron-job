@@ -17,11 +17,11 @@ Sentry.init({
 
 const app = express();
 
-cron.schedule('5 * * * *', syncBackJob, {
+cron.schedule('35 * * * *', syncBackJob, {
   timezone: 'Asia/Jerusalem'
 });
 
-cron.schedule('35 * * * *', syncForwardJob, {
+cron.schedule('5 * * * *', syncForwardJob, {
   timezone: 'Asia/Jerusalem'
 });
 
