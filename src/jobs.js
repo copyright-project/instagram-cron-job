@@ -6,7 +6,6 @@ const contract = require('./contract');
 const instagram = require('./instagram');
 const Sentry = require('@sentry/node');
 
-
 const mixpanel = Mixpanel.init(process.env.MIXPANEL_TOKEN);
 
 Sentry.init({
@@ -78,7 +77,7 @@ const syncBackJob = async () => {
 
   mixpanel.track('SyncBackUsers', { amount: Object.keys(users).length });
 
-  return Promise.all(
+  return Promise.allSettled(
     _.map(users, (val, userId) =>
       syncBackUser(userId, val['accessToken'], val['copyrightAttribution'])
     )
@@ -99,7 +98,6 @@ const syncBackUser = async (userId, accessToken, copyrightAttribution) => {
     const maxId = media[0]['instagramId'];
     await db.setLastSyncMaxId(userId, maxId);
     await db.updateRegisteredImagesAmount(userId, filteredMedia.length);
-    return;
   } catch (err) {
     console.log(err);
     Sentry.captureException(err);

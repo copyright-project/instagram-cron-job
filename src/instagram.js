@@ -1,4 +1,5 @@
 const axios = require('axios');
+const Sentry = require('@sentry/node');
 
 const postToDAO = post => {
   return {
@@ -31,25 +32,45 @@ async function* getMediaUntil(initUrl, stopCondition) {
 }
 
 const getAllUserMedia = async accessToken => {
+  let media = [];
   const count = await getMediaCount(accessToken);
   const url = `https://api.instagram.com/v1/users/self/media/recent/?access_token=${accessToken}&count=${count}`;
+
   const stopCondition = ({ pagination }) => pagination.next_url === undefined;
-  let media = [];
-  for await (const posts of getMediaUntil(url, stopCondition)) {
-    media.push(...posts);
+
+  try {
+    for await (const posts of getMediaUntil(url, stopCondition)) {
+      media.push(...posts);
+    }
+  } catch ({ data }) {
+    const { meta } = data;
+    if (meta.error_message) {
+      Sentry.captureMessage(meta.error_message);
+    } else {
+      Sentry.captureException(meta);
+    }
   }
+
   return media.map(postToDAO);
 };
 
 const getMediaStartingFrom = async (accessToken, lastMaxId) => {
-  const initUrl = `https://api.instagram.com/v1/users/self/media/recent/?access_token=${accessToken}&min_id=${lastMaxId}`;
-  const stopCondition = ({ pagination }) => {
-    return !pagination.next_max_id || pagination.next_max_id < lastMaxId;
-  };
   let media = [];
+  const url = `https://api.instagram.com/v1/users/self/media/recent/?access_token=${accessToken}&min_id=${lastMaxId}`;
 
-  for await (const posts of getMediaUntil(initUrl, stopCondition)) {
-    media.push(...posts);
+  const stopCondition = ({ pagination }) => !pagination.next_max_id || pagination.next_max_id < lastMaxId;
+
+  try {
+    for await (const posts of getMediaUntil(url, stopCondition)) {
+      media.push(...posts);
+    }
+  } catch ({ data }) {
+    const { meta } = data;
+    if (meta.error_message) {
+      Sentry.captureMessage(meta.error_message);
+    } else {
+      Sentry.captureException(meta);
+    }
   }
 
   const freshPosts = media.filter(post => post.id > lastMaxId);
