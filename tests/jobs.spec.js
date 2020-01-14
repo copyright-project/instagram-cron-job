@@ -14,6 +14,7 @@ jest.doMock('orbs-client-sdk', () => ({
     sendTransaction: mockSendTx,
     sendQuery: mockSendQuery
   })),
+  LocalSigner: jest.fn(),
   decodeHex: jest.fn(str => str),
   argString: jest.fn(str => str)
 }));

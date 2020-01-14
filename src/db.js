@@ -6,12 +6,14 @@ const scopes = [
   'https://www.googleapis.com/auth/firebase.database'
 ];
 
+const DB_BASE_URL = 'https://open-rights.firebaseio.com';
+
 let serviceAccount = {};
 
 try {
-  serviceAccount = require('../DO_NOT_COMMIT_IT_OR_BE_FIRED.json');
+  serviceAccount = require('../open-rights-firebase-adminsdk.json');
   // eslint-disable-next-line no-empty
-} catch (err) {}
+} catch (err) { }
 
 const jwtClient = new google.auth.JWT(
   serviceAccount.client_email,
@@ -41,7 +43,7 @@ const auth = () => {
 const getUser = async userId => {
   const accessToken = await auth();
   const { data } = await axios.get(
-    `https://instagram-media-rights.firebaseio.com/users/${userId}.json?access_token=${accessToken}`
+    `${DB_BASE_URL}/users/${userId}.json?access_token=${accessToken}`
   );
   return data;
 };
@@ -49,7 +51,7 @@ const getUser = async userId => {
 const getNewUsers = async () => {
   const accessToken = await auth();
   const { data } = await axios.get(
-    `https://instagram-media-rights.firebaseio.com/users.json?access_token=${accessToken}&orderBy="isSyncedBack"&equalTo=null`
+    `${DB_BASE_URL}/users.json?access_token=${accessToken}&orderBy="isSyncedBack"&equalTo=null`
   );
   return data;
 };
@@ -57,7 +59,7 @@ const getNewUsers = async () => {
 const getRegisteredUsers = async () => {
   const accessToken = await auth();
   const { data } = await axios.get(
-    `https://instagram-media-rights.firebaseio.com/users.json?access_token=${accessToken}&orderBy="isSyncedBack"&equalTo=true`
+    `${DB_BASE_URL}/users.json?access_token=${accessToken}&orderBy="isSyncedBack"&equalTo=true`
   );
   return data;
 };
@@ -65,7 +67,7 @@ const getRegisteredUsers = async () => {
 const markUserAsSynced = async userId => {
   const accessToken = await auth();
   return axios.patch(
-    `https://instagram-media-rights.firebaseio.com/users/${userId}.json?access_token=${accessToken}`,
+    `${DB_BASE_URL}/users/${userId}.json?access_token=${accessToken}`,
     {
       isSyncedBack: true
     }
@@ -75,7 +77,7 @@ const markUserAsSynced = async userId => {
 const setLastSyncMaxId = async (userId, maxId) => {
   const accessToken = await auth();
   return axios.patch(
-    `https://instagram-media-rights.firebaseio.com/users/${userId}.json?access_token=${accessToken}`,
+    `${DB_BASE_URL}/users/${userId}.json?access_token=${accessToken}`,
     {
       lastSyncedMaxId: maxId
     }
@@ -84,16 +86,17 @@ const setLastSyncMaxId = async (userId, maxId) => {
 
 const updateRegisteredImagesAmount = async (userId, increase) => {
   const accessToken = await auth();
+  const key = 'registeredImagesCount';
   const { data } = await axios.get(
-    `https://instagram-media-rights.firebaseio.com/users/${userId}.json?access_token=${accessToken}`
+    `${DB_BASE_URL}/users/${userId}.json?access_token=${accessToken}`
   );
-  const currentAmount = data.registeredImages
-    ? parseInt(data.registeredImages, 10)
+  const currentAmount = data[key]
+    ? parseInt(data[key], 10)
     : 0;
   await axios.patch(
-    `https://instagram-media-rights.firebaseio.com/users/${userId}.json?access_token=${accessToken}`,
+    `${DB_BASE_URL}/users/${userId}.json?access_token=${accessToken}`,
     {
-      registeredImages: currentAmount + increase
+      [key]: currentAmount + increase
     }
   );
 };

@@ -17,9 +17,9 @@ describe('Instagram Service', () => {
     const media = await getMediaStartingFrom(accessToken, lastSyncedMaxId);
     expect(media).toEqual([
       {
-        instagramId: '2103913782500881485_12345678',
+        postId: '2103913782500881485_12345678',
         imageUrl:
-          'https://some-image.com/vp/c763718f898c5f78979ef9f8ed19be9d/5DCD6B14/t51.2885-15/sh0.08/e35/s640x640/66615906_407924376495714_8082663129990530053_n.jpg?_nc_ht=scontent.cdninstagram.com',
+          'https://some-image.com/vp/fa4ef0e5bf8a58968a7f265659ec0b9a/5E143FB3/t51.2885-15/e35/s150x150/66615906_407924376495714_8082663129990530053_n.jpg?_nc_ht=scontent.cdninstagram.com',
         postedAt: '1565026089'
       }
     ]);

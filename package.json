@@ -23,9 +23,8 @@
     "express": "^4.17.1",
     "googleapis": "^42.0.0",
     "lodash": "^4.17.15",
-    "mixpanel": "^0.10.2",
     "node-cron": "^2.0.3",
-    "orbs-client-sdk": "^1.1.1"
+    "orbs-client-sdk": "^2.3.1"
   },
   "devDependencies": {
     "eslint": "^6.1.0",

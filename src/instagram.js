@@ -1,19 +1,31 @@
 const axios = require('axios');
 
-const postToDAO = post => {
-  return {
-    instagramId: post.id,
-    imageUrl: post.images.standard_resolution.url,
-    postedAt: post.created_time
-  };
-};
+function retrieveImagesFromPost(post) {
+  if (post.type === 'image') {
+    return [post];
+  }
+  if (post.type === 'carousel') {
+    return post['carousel_media']
+      .filter(isEligibleMedia)
+      .map(media => ({
+        ...media,
+        id: post['id'],
+        'created_time': post['created_time']
+      }))
+  }
+}
 
-const getMediaCount = async accessToken => {
-  const { data } = await axios.get(
-    `https://api.instagram.com/v1/users/self/?access_token=${accessToken}`
-  );
-  return data.data.counts.media;
-};
+function normalizeDTO(imagePayload) {
+  return {
+    postId: imagePayload.id,
+    imageUrl: imagePayload.images['thumbnail'].url,
+    postedAt: imagePayload['created_time']
+  };
+}
+
+function isEligibleMedia(media) {
+  return media.type === 'image' || media.type === 'carousel';
+}
 
 async function* getMediaUntil(initUrl, stopCondition) {
   let isDone = false;
@@ -30,32 +42,36 @@ async function* getMediaUntil(initUrl, stopCondition) {
   }
 }
 
-const getAllUserMedia = async accessToken => {
+const getAllPosts = async (url, stopCondition) => {
   let media = [];
-  const count = await getMediaCount(accessToken);
-  const url = `https://api.instagram.com/v1/users/self/media/recent/?access_token=${accessToken}&count=${count}`;
-
-  const stopCondition = ({ pagination }) => pagination.next_url === undefined;
-
   for await (const posts of getMediaUntil(url, stopCondition)) {
     media.push(...posts);
   }
+  return media.filter(isEligibleMedia);
+};
 
-  return media.map(postToDAO);
+const postsToImages = (posts) => {
+  return posts.reduce((acc, post) => {
+    const images = retrieveImagesFromPost(post).map(normalizeDTO)
+    acc.push(...images);
+    return acc;
+  }, []);
+}
+
+const getAllUserMedia = async accessToken => {
+  const url = `https://api.instagram.com/v1/users/self/media/recent/?access_token=${accessToken}`;
+  const stopCondition = ({ pagination }) => pagination.next_url === undefined;
+  const posts = await getAllPosts(url, stopCondition);
+  return postsToImages(posts);
+
 };
 
 const getMediaStartingFrom = async (accessToken, lastMaxId) => {
-  let media = [];
   const url = `https://api.instagram.com/v1/users/self/media/recent/?access_token=${accessToken}&min_id=${lastMaxId}`;
-
   const stopCondition = ({ pagination }) => !pagination.next_max_id || pagination.next_max_id < lastMaxId;
-
-  for await (const posts of getMediaUntil(url, stopCondition)) {
-    media.push(...posts);
-  }
-
-  const freshPosts = media.filter(post => post.id > lastMaxId);
-  return freshPosts.map(postToDAO);
+  const posts = await getAllPosts(url, stopCondition);
+  const freshPosts = posts.filter(post => post.id > lastMaxId);
+  return postsToImages(freshPosts)
 };
 
 module.exports = {
