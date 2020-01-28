@@ -23,8 +23,7 @@ class Posts {
     return nock(`https://api.instagram.com`)
       .get(`/v1/users/self/media/recent/`)
       .query({
-        access_token: accessToken,
-        count: AllPosts.data.length
+        access_token: accessToken
       })
       .reply(200, AllPosts);
   }

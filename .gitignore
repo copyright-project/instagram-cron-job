@@ -62,3 +62,5 @@ typings/
 
 DO_NOT_COMMIT_IT_OR_BE_FIRED.json
 open-rights-firebase-adminsdk.json
+
+.DS_Store

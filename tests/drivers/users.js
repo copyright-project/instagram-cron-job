@@ -1,6 +1,6 @@
 const nock = require('nock');
 
-const FIREBASE_BASE_URL = 'https://instagram-media-rights.firebaseio.com';
+const FIREBASE_BASE_URL = 'https://open-rights.firebaseio.com';
 
 class Users {
   constructor() {

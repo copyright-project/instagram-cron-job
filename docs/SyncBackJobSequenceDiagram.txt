@@ -1,0 +1,23 @@
+title Sync Back Job
+database Firebase
+
+Sync Back Job -> Firebase: get new users\n(isSyncedBack != true)
+Firebase-->Sync Back Job: users \n[accessToken & copyrights]
+
+loop for each user
+Sync Back Job->Instagram: getAllUserMedia
+Sync Back Job<--Instagram:mediaDTO[]
+loop for each media item
+Sync Back Job->Hash:getImageHash
+Sync Back Job<--Hash:pHash & binaryHash
+Sync Back Job->Orbs: registerImage\npHash,imageUrl,postedAt,copyright,binaryHash
+Sync Back Job<--Orbs: result (success or not)
+end
+Sync Back Job->Firebase: markUserAsSynced
+Sync Back Job<--Firebase:
+Sync Back Job->Firebase: setLastSyncMaxId
+Sync Back Job<--Firebase:
+Sync Back Job->Firebase: updateRegisteredCounter
+
+Sync Back Job<--Firebase:
+end

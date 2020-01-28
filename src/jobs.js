@@ -9,6 +9,8 @@ Sentry.init({
   dsn: 'https://13b6af852aa74adb953730f775edd27e@sentry.io/1537409'
 });
 
+const isSuccessfullyRegistered = res => !!res;
+
 const calculateHashAndRegister = async ({ imageUrl, postedAt }, copyrightAttribution) => {
   const { pHash, binaryHash } = await hash.calculateHash(imageUrl);
   const registeredSuccessfully = await contract.registerImage(
@@ -51,10 +53,10 @@ const syncUserForward = async (
     return;
   }
   try {
-    const results = Promise.all(newMedia.map(post => calculateHashAndRegister(post, copyrightAttribution)));
+    const results = await Promise.all(newMedia.map(post => calculateHashAndRegister(post, copyrightAttribution)));
     const maxId = newMedia[0]['postId'];
     await db.setLastSyncMaxId(userId, maxId);
-    await db.updateRegisteredImagesAmount(userId, results.filter(i => i).length);
+    await db.updateRegisteredImagesAmount(userId, results.filter(isSuccessfullyRegistered).length);
   } catch (err) {
     console.log(err);
     if (err.data) {
@@ -78,11 +80,11 @@ const syncBackJob = async () => {
 const syncBackUser = async (userId, accessToken, copyrightAttribution) => {
   try {
     const media = await instagram.getAllUserMedia(accessToken);
-    const results = Promise.all(media.map(post => calculateHashAndRegister(post, copyrightAttribution)));
+    const results = await Promise.all(media.map(post => calculateHashAndRegister(post, copyrightAttribution)));
     await db.markUserAsSynced(userId);
     const maxId = media[0]['postId'];
     await db.setLastSyncMaxId(userId, maxId);
-    await db.updateRegisteredImagesAmount(userId, results.filter(i => i).length);
+    await db.updateRegisteredImagesAmount(userId, results.filter(isSuccessfullyRegistered).length);
   } catch (err) {
     console.log(err);
     if (err.data) {
@@ -92,7 +94,7 @@ const syncBackUser = async (userId, accessToken, copyrightAttribution) => {
     }
   }
 };
-
+ 
 module.exports = {
   syncForwardJob,
   syncBackJob,

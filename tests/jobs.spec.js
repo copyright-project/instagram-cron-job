@@ -1,3 +1,4 @@
+const nock = require('nock');
 const Hash = require('./drivers/hash');
 const Users = require('./drivers/users');
 const Posts = require('./drivers/posts');
@@ -66,16 +67,14 @@ describe('Jobs', () => {
       mockSendQuery.mockReset();
     });
 
-    it('should store image in contract', async () => {
+    it.only('should store image in contract', async () => {
       mockCreateTx.mockReturnValue(['tx']);
       mockSendTx.mockReturnValue({
         executionResult: 'SUCCESS',
-        requestStatus: 'COMPLETED'
+        requestStatus: 'COMPLETED',
+        transactionStatus: 'COMMITTED'
       });
-      mockSendQuery.mockReturnValue({
-        outputArguments: [{ value: '0000000000' }]
-      });
-
+      console.log(nock.pendingMocks());
       await jobs.syncBackJob();
 
       const allPosts = postsDriver.getAllPosts();
@@ -83,18 +82,14 @@ describe('Jobs', () => {
 
       expect(mockCreateTx).toHaveBeenCalledTimes(allPosts.length);
       expect(mockCreateTx).lastCalledWith(
-        process.env.ORBS_PUBLIC_KEY,
-        process.env.ORBS_PRIVATE_KEY,
         process.env.REGISTRY_CONTRACT_NAME,
         'registerMedia',
         [
-          allPosts[lastIndex].id,
-          JSON.stringify({
-            imageUrl: allPosts[lastIndex].images.standard_resolution.url,
-            postedAt: allPosts[lastIndex].created_time,
-            hash: lastIndex,
-            copyrightAttribution
-          })
+          `pHash-${lastIndex}`, 
+          allPosts[lastIndex].images.thumbnail.url, 
+          allPosts[lastIndex].created_time, 
+          copyrightAttribution, 
+          // `binaryHash-${lastIndex}`, 
         ]
       );
     });

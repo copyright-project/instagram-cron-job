@@ -1,0 +1,23 @@
+title Sync Forward Job
+database Firebase
+
+Sync Forward Job -> Firebase: get registered users\n(isSyncedBack == true)
+Firebase-->Sync Forward Job: users \n[accessToken & copyrights & lastSyncedMaxId]
+
+loop for each user
+Sync Forward Job->Instagram: getMediaStartingFrom(lastSyncedMaxId)
+Sync Forward Job<--Instagram:mediaDTO[]
+loop for each media item
+Sync Forward Job->Hash:getImageHash
+Sync Forward Job<--Hash:pHash & binaryHash
+Sync Forward Job->Orbs: registerImage\npHash,imageUrl,postedAt,copyright,binaryHash
+Sync Forward Job<--Orbs: result (success or not)
+end
+
+
+Sync Forward Job->Firebase: setLastSyncMaxId
+Sync Forward Job<--Firebase:
+Sync Forward Job->Firebase: updateRegisteredCounter
+
+Sync Forward Job<--Firebase:
+end

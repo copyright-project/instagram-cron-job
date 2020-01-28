@@ -33,7 +33,7 @@ describe('Instagram Service', () => {
     posts.whenFetchingPage2(accessToken, '1935863706416162455_12345678');
 
     const media = await getMediaStartingFrom(accessToken, lastSyncedMaxId);
-    expect(media.length).toEqual(8);
+    expect(media.length).toEqual(10);
   });
 
   it('should return empty array if no fresh posts', async () => {

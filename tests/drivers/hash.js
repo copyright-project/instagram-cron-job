@@ -8,7 +8,10 @@ class Hash {
   }
   whenFetchingHashForImages(amount, responses) {
     if (!responses) {
-      responses = Array.from(Array(amount), (_, i) => i);
+      responses = Array.from(Array(amount), (_, i) => ({
+        pHash: `pHash-${i}`,
+        binaryHash: `binaryHash-${i}`
+      }));
     }
     responses.map(res => this.whenFetchingHash(res));
   }

@@ -50,7 +50,7 @@ const getAllPosts = async (url, stopCondition) => {
   return media.filter(isEligibleMedia);
 };
 
-const postsToImages = (posts) => {
+const flatPostsToImages = (posts) => {
   return posts.reduce((acc, post) => {
     const images = retrieveImagesFromPost(post).map(normalizeDTO)
     acc.push(...images);
@@ -62,7 +62,7 @@ const getAllUserMedia = async accessToken => {
   const url = `https://api.instagram.com/v1/users/self/media/recent/?access_token=${accessToken}`;
   const stopCondition = ({ pagination }) => pagination.next_url === undefined;
   const posts = await getAllPosts(url, stopCondition);
-  return postsToImages(posts);
+  return flatPostsToImages(posts);
 
 };
 
@@ -71,7 +71,7 @@ const getMediaStartingFrom = async (accessToken, lastMaxId) => {
   const stopCondition = ({ pagination }) => !pagination.next_max_id || pagination.next_max_id < lastMaxId;
   const posts = await getAllPosts(url, stopCondition);
   const freshPosts = posts.filter(post => post.id > lastMaxId);
-  return postsToImages(freshPosts)
+  return flatPostsToImages(freshPosts)
 };
 
 module.exports = {

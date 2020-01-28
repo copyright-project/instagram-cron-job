@@ -1,0 +1,1 @@
+curl -X POST http://localhost:5678/triggers/sync/back/$1
